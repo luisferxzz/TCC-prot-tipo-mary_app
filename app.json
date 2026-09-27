@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "Mary App",
+    "slug": "mary-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#111111"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.maryapp",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "O Mary App usa sua localização para encontrar serviços de emergência próximos e compartilhar sua posição com contatos de confiança.",
+        "NSCameraUsageDescription": "O Mary App usa a câmera para você tirar sua foto de perfil.",
+        "NSPhotoLibraryUsageDescription": "O Mary App acessa suas fotos para você escolher uma foto de perfil.",
+        "NSMicrophoneUsageDescription": "O Mary App usa o microfone para gravações de segurança durante emergências."
+      }
+    },
+    "android": {
+      "package": "br.com.maryapp",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "O Mary App usa sua localização para encontrar serviços de emergência próximos."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Mary App acessa suas fotos para você escolher uma foto de perfil.",
+          "cameraPermission": "O Mary App usa a câmera para você tirar sua foto de perfil."
+        }
+      ],
+      "expo-secure-store",
+      "expo-localization",
+      "expo-sharing",
+      "expo-status-bar"
+    ]
+  }
+}

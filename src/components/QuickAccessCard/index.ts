@@ -1,0 +1,1 @@
+export { QuickAccessCard } from "./QuickAccessCard";
