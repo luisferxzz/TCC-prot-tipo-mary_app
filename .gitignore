@@ -39,7 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
-"src.rar" 
-".idea/" 
-"src.rar" 
-".idea/" 
+
+# arquivos locais que nao devem ir pro repositorio
+src.rar
+.idea/
