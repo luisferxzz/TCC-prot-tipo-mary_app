@@ -6,16 +6,7 @@
  */
 
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  Pressable,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+import { View, StyleSheet, Pressable, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { colors, radius, fontSizes, fontWeights } from "../../theme";
@@ -23,8 +14,27 @@ import { useTranslation } from "../../i18n";
 import { Button } from "../../components/Button";
 import { supabase } from "../../services/supabase/client";
 import type { RootStackNavigation } from "../../navigation/types";
+import { Text, TextInput } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * "15/03/1990" (como o campo pede, DD/MM/AAAA) → "1990-03-15"
+ * (o que o Postgres espera numa coluna date). Sem essa conversão,
+ * o banco recebe a data no formato errado — na melhor das
+ * hipóteses dá erro, na pior grava uma data errada sem avisar.
+ */
+function dataNascimentoParaISO(valor: string): string | null {
+  const partes = valor.trim().split("/");
+  if (partes.length !== 3) return null;
+
+  const [dia, mes, ano] = partes;
+  if (dia.length !== 2 || mes.length !== 2 || ano.length !== 4) return null;
+  if (!/^\d+$/.test(dia + mes + ano)) return null;
+
+  return `${ano}-${mes}-${dia}`;
+}
 
 export function CadastroScreen() {
   const navigation = useNavigation<RootStackNavigation>();
@@ -83,34 +93,43 @@ export function CadastroScreen() {
       return;
     }
 
+    const dataNascimentoISO = dataNascimento.trim() ? dataNascimentoParaISO(dataNascimento) : null;
+    if (dataNascimento.trim() && !dataNascimentoISO) {
+      setMensagem(t("cadastro.invalidBirthDate"));
+      return;
+    }
+
     setCarregando(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // Os dados pessoais vão em "options.data" (metadados do
+      // Auth), não num insert separado: um trigger no banco lê
+      // daqui e cria a linha em "usuarios" sozinho — funciona
+      // mesmo que a confirmação de e-mail esteja ativada (nesse
+      // caso ainda não existe sessão logo após o signUp, então
+      // um insert feito pelo app aqui seria bloqueado pela RLS).
+      // Ver supabase_schema.sql, função mary_criar_perfil_usuario.
+      const { error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password: senha,
+        options: {
+          data: {
+            nome: nome.trim(),
+            telefone: telefone.trim(),
+            data_nascimento: dataNascimentoISO,
+            cidade: cidade.trim() || null,
+            estado: estado.trim() || null,
+            endereco: endereco.trim() || null,
+            numero: numero.trim() || null,
+            complemento: complemento.trim() || null,
+          },
+        },
       });
 
       if (error) {
         setMensagem(error.message);
         setCarregando(false);
         return;
-      }
-
-      const usuarioId = data.user?.id;
-
-      if (usuarioId) {
-        await supabase.from("usuarios").insert({
-          id: usuarioId,
-          nome: nome.trim(),
-          telefone: telefone.trim(),
-          data_nascimento: dataNascimento || null,
-          cidade: cidade || null,
-          estado: estado || null,
-          endereco: endereco || null,
-          numero: numero || null,
-          complemento: complemento || null,
-        });
       }
 
       navigation.reset({ index: 0, routes: [{ name: "Login" }] });
@@ -130,7 +149,7 @@ export function CadastroScreen() {
             onPress={() => (etapa === 2 ? setEtapa(1) : navigation.goBack())}
             style={styles.backButton}
           >
-            <Text style={styles.backButtonText}>←</Text>
+            <Ionicons name="arrow-back" size={20} color={colors.text} />
           </Pressable>
 
           <Text style={styles.title}>{t("cadastro.title")}</Text>
@@ -166,7 +185,7 @@ export function CadastroScreen() {
 
               <Pressable style={styles.termsRow} onPress={() => setAceitaTermos((atual) => !atual)}>
                 <View style={[styles.checkbox, aceitaTermos && styles.checkboxChecked]}>
-                  {aceitaTermos && <Text style={styles.checkboxMark}>✓</Text>}
+                  {aceitaTermos && <Ionicons name="checkmark" size={13} color={colors.white} />}
                 </View>
                 <Text style={styles.termsText}>{t("cadastro.termsLabel")}</Text>
               </Pressable>

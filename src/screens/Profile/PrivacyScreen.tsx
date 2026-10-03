@@ -7,7 +7,7 @@
  */
 
 import React, { useCallback, useState } from "react";
-import { View, Text, Pressable, StyleSheet, Alert, Linking } from "react-native";
+import { View, Pressable, StyleSheet, Alert, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import * as Location from "expo-location";
@@ -19,6 +19,8 @@ import { Button } from "../../components/Button";
 import { AppCard } from "../../components/AppCard";
 import { apagarDadosLocais } from "../../services/storage/dataManagement";
 import type { ProfileStackNavigation } from "../../navigation/types";
+import { Text } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 type StatusPermissao = "concedida" | "negada" | "desconhecida";
 
@@ -31,6 +33,18 @@ function textoStatus(
     negada: t("privacidade.permissionDenied"),
     desconhecida: t("privacidade.permissionUnknown"),
   }[status];
+}
+
+function iconeStatus(status: StatusPermissao): React.ComponentProps<typeof Ionicons>["name"] {
+  if (status === "concedida") return "checkmark-circle";
+  if (status === "negada") return "close-circle";
+  return "help-circle-outline";
+}
+
+function corStatus(status: StatusPermissao): string {
+  if (status === "concedida") return colors.successLight;
+  if (status === "negada") return colors.dangerLight;
+  return colors.textMuted;
 }
 
 export function PrivacyScreen() {
@@ -89,7 +103,7 @@ export function PrivacyScreen() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backButton} accessibilityLabel={t("common.back")}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </Pressable>
         <View>
           <Text style={styles.title}>{t("privacidade.title")}</Text>
@@ -108,15 +122,24 @@ export function PrivacyScreen() {
 
           <View style={styles.permissionRow}>
             <Text style={styles.permissionLabel}>{t("privacidade.locationPermission")}</Text>
-            <Text style={styles.permissionValue}>{textoStatus(localizacaoStatus, t)}</Text>
+            <View style={styles.permissionValueRow}>
+              <Ionicons name={iconeStatus(localizacaoStatus)} size={14} color={corStatus(localizacaoStatus)} />
+              <Text style={styles.permissionValue}>{textoStatus(localizacaoStatus, t)}</Text>
+            </View>
           </View>
           <View style={styles.permissionRow}>
             <Text style={styles.permissionLabel}>{t("privacidade.cameraPermission")}</Text>
-            <Text style={styles.permissionValue}>{textoStatus(cameraStatus, t)}</Text>
+            <View style={styles.permissionValueRow}>
+              <Ionicons name={iconeStatus(cameraStatus)} size={14} color={corStatus(cameraStatus)} />
+              <Text style={styles.permissionValue}>{textoStatus(cameraStatus, t)}</Text>
+            </View>
           </View>
           <View style={styles.permissionRow}>
             <Text style={styles.permissionLabel}>{t("privacidade.microphonePermission")}</Text>
-            <Text style={styles.permissionValue}>{textoStatus(microfoneStatus, t)}</Text>
+            <View style={styles.permissionValueRow}>
+              <Ionicons name={iconeStatus(microfoneStatus)} size={14} color={corStatus(microfoneStatus)} />
+              <Text style={styles.permissionValue}>{textoStatus(microfoneStatus, t)}</Text>
+            </View>
           </View>
 
           <Button
@@ -159,6 +182,7 @@ const styles = StyleSheet.create({
   cardTitle: { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.bold },
   cardText: { color: colors.textMuted, fontSize: 12, lineHeight: 18 },
   permissionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  permissionValueRow: { flexDirection: "row", alignItems: "center", gap: 5 },
   permissionLabel: { color: colors.textSecondary, fontSize: fontSizes.xs },
   permissionValue: { color: colors.text, fontSize: fontSizes.xs, fontWeight: fontWeights.bold },
 });

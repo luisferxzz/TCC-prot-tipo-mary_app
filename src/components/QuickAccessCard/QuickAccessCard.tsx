@@ -5,11 +5,12 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, ViewStyle } from "react-native";
+import { View, StyleSheet, ViewStyle } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { Pressable } from "react-native";
 import { AppCard } from "../AppCard";
 import { colors, spacing, radius, fontSizes, fontWeights } from "../../theme";
+import { Text } from "../../components/AppText";
 
 type QuickAccessCardProps = {
   icon: string;

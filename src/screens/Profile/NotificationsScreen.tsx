@@ -1,22 +1,25 @@
 /**
  * Mary App — Notificações
  *
- * O projeto ainda não tem push de verdade (sem
- * expo-notifications instalado) — esta tela liga/desliga
- * os lembretes DENTRO do app (dica do dia na Home). Nada
- * de fingir que existe uma notificação do sistema que na
- * prática não seria enviada.
+ * O toggle controla duas coisas: (1) os lembretes DENTRO do
+ * app (dica do dia na Home) e (2) uma notificação semanal de
+ * verdade agendada no aparelho (local, não push — ver
+ * services/notifications/localNotifications.ts). Continua sem
+ * push remoto, que exigiria development build.
  */
 
 import React, { useCallback, useState } from "react";
-import { View, Text, Pressable, Switch, StyleSheet } from "react-native";
+import { View, Pressable, Switch, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { colors, spacing, radius, fontSizes, fontWeights } from "../../theme";
 import { useTranslation } from "../../i18n";
 import { AppCard } from "../../components/AppCard";
 import { notificacoesAtivas, definirNotificacoesAtivas } from "../../services/storage/preferences";
+import { ativarLembreteSemanal, cancelarLembreteSemanal } from "../../services/notifications/localNotifications";
 import type { ProfileStackNavigation } from "../../navigation/types";
+import { Text } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export function NotificationsScreen() {
   const navigation = useNavigation<ProfileStackNavigation>();
@@ -40,13 +43,25 @@ export function NotificationsScreen() {
   async function alternar(valor: boolean) {
     setAtivo(valor);
     await definirNotificacoesAtivas(valor);
+
+    if (valor) {
+      const conseguiu = await ativarLembreteSemanal();
+      if (!conseguiu) {
+        Alert.alert(
+          t("notificacoesConfig.permissionDeniedTitle"),
+          t("notificacoesConfig.permissionDeniedText")
+        );
+      }
+    } else {
+      await cancelarLembreteSemanal();
+    }
   }
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backButton} accessibilityLabel={t("common.back")}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </Pressable>
         <View>
           <Text style={styles.title}>{t("notificacoesConfig.title")}</Text>

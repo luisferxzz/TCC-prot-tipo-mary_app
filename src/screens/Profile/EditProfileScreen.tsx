@@ -6,7 +6,7 @@
  */
 
 import React, { useCallback, useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, Alert } from "react-native";
+import { View, Pressable, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { colors, spacing, radius, fontSizes, fontWeights } from "../../theme";
@@ -15,6 +15,8 @@ import { Button } from "../../components/Button";
 import { AppCard } from "../../components/AppCard";
 import { obterUsuario, atualizarPerfil } from "../../services/supabase/auth";
 import type { ProfileStackNavigation } from "../../navigation/types";
+import { Text, TextInput } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export function EditProfileScreen() {
   const navigation = useNavigation<ProfileStackNavigation>();
@@ -67,7 +69,7 @@ export function EditProfileScreen() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backButton} accessibilityLabel={t("common.back")}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </Pressable>
         <View>
           <Text style={styles.title}>{t("editarPerfil.title")}</Text>

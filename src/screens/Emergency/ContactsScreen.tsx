@@ -5,17 +5,7 @@
  */
 
 import React, { useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  FlatList,
-  StyleSheet,
-  Modal,
-  Alert,
-  Linking,
-} from "react-native";
+import { View, Pressable, FlatList, StyleSheet, Modal, Alert, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { colors, spacing, radius, fontSizes, fontWeights, shadows } from "../../theme";
@@ -29,6 +19,8 @@ import {
   atualizarContato,
 } from "../../services/storage/contacts";
 import type { EmergencyStackNavigation } from "../../navigation/types";
+import { Text, TextInput } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export function ContactsScreen() {
   const navigation = useNavigation<EmergencyStackNavigation>();
@@ -115,7 +107,7 @@ export function ContactsScreen() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backButton} accessibilityLabel={t("common.back")}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </Pressable>
 
         <View style={{ flex: 1 }}>
@@ -126,13 +118,13 @@ export function ContactsScreen() {
         </View>
 
         <Pressable onPress={abrirParaAdicionar} style={styles.addButton} accessibilityLabel="Adicionar contato">
-          <Text style={styles.addButtonText}>+</Text>
+          <Ionicons name="add" size={24} color={colors.white} />
         </Pressable>
       </View>
 
       {contatos.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>👥</Text>
+          <Ionicons name="people-outline" size={32} color={colors.textMuted} style={{ marginBottom: 6 }} />
           <Text style={styles.emptyTitle}>{t("contatos.emptyTitle")}</Text>
           <Text style={styles.emptyText}>
             {t("contatos.emptyText")}
@@ -160,10 +152,10 @@ export function ContactsScreen() {
 
               <View style={styles.actions}>
                 <Pressable style={styles.actionButton} onPress={() => ligarPara(item.telefone)} accessibilityLabel={`Ligar para ${item.nome}`}>
-                  <Text>📞</Text>
+                  <Ionicons name="call-outline" size={16} color={colors.primaryLight} />
                 </Pressable>
                 <Pressable style={styles.actionButton} onPress={() => confirmarRemocao(item)} accessibilityLabel={`Excluir ${item.nome}`}>
-                  <Text>🗑️</Text>
+                  <Ionicons name="trash-outline" size={16} color={colors.dangerLight} />
                 </Pressable>
               </View>
             </View>
@@ -183,7 +175,7 @@ export function ContactsScreen() {
 
             <Pressable style={styles.checkboxRow} onPress={() => setPrincipal((atual) => !atual)}>
               <View style={[styles.checkbox, principal && styles.checkboxChecked]}>
-                {principal && <Text style={styles.checkboxMark}>✓</Text>}
+                {principal && <Ionicons name="checkmark" size={13} color={colors.white} />}
               </View>
               <Text style={styles.checkboxLabel}>{t("contatos.mainContact")}</Text>
             </Pressable>

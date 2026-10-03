@@ -10,7 +10,7 @@
  */
 
 import React, { useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -18,8 +18,10 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { AppCard } from "../AppCard";
 import { colors, spacing, fontSizes, fontWeights } from "../../theme";
+import { Text } from "../../components/AppText";
 
 type SecurityStatusCardProps = {
   title: string;
@@ -74,18 +76,18 @@ export function SecurityStatusCard({
 
       <View style={styles.chipsRow}>
         <View style={styles.chip}>
-          <Text style={styles.chipIcon}>📍</Text>
+          <Ionicons name="location-outline" size={12} color={colors.textSecondary} />
           <Text style={styles.chipText}>{locationText}</Text>
         </View>
 
         <View style={styles.chip}>
-          <Text style={styles.chipIcon}>👥</Text>
+          <Ionicons name="people-outline" size={12} color={colors.textSecondary} />
           <Text style={styles.chipText}>{contactsText}</Text>
         </View>
 
         {Boolean(notificationsText) && (
           <View style={styles.chip}>
-            <Text style={styles.chipIcon}>🔔</Text>
+            <Ionicons name="notifications-outline" size={12} color={colors.textSecondary} />
             <Text style={styles.chipText}>{notificationsText}</Text>
           </View>
         )}

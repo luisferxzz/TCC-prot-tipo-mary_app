@@ -4,14 +4,9 @@
  */
 
 import React from "react";
-import {
-  Pressable,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  ViewStyle,
-} from "react-native";
+import { Pressable, StyleSheet, ActivityIndicator, ViewStyle } from "react-native";
 import { colors, radius, fontSizes, fontWeights } from "../theme";
+import { Text } from "../components/AppText";
 
 type ButtonProps = {
   label: string;

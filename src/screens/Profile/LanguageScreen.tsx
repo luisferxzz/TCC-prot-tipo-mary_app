@@ -7,13 +7,15 @@
  */
 
 import React, { useMemo, useState } from "react";
-import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from "react-native";
+import { View, Pressable, FlatList, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { colors, spacing, radius, fontSizes, fontWeights } from "../../theme";
 import { useTranslation } from "../../i18n";
 import type { CodigoIdioma } from "../../i18n";
 import type { ProfileStackNavigation } from "../../navigation/types";
+import { Text, TextInput } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export function LanguageScreen() {
   const navigation = useNavigation<ProfileStackNavigation>();
@@ -35,7 +37,7 @@ export function LanguageScreen() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backButton} accessibilityLabel={t("common.back")}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </Pressable>
 
         <View>
@@ -45,7 +47,7 @@ export function LanguageScreen() {
       </View>
 
       <View style={styles.searchBar}>
-        <Text style={styles.searchIcon}>🔎</Text>
+        <Ionicons name="search" size={14} color={colors.textSecondary} />
         <TextInput
           value={busca}
           onChangeText={setBusca}
@@ -72,7 +74,7 @@ export function LanguageScreen() {
             >
               <Text style={styles.flag}>{item.flag}</Text>
               <Text style={styles.optionText}>{item.name}</Text>
-              {selecionado && <Text style={styles.check}>✓</Text>}
+              {selecionado && <Ionicons name="checkmark" size={18} color={colors.primary} />}
             </Pressable>
           );
         }}

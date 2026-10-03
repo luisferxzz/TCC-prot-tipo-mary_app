@@ -1,9 +1,11 @@
 /**
  * Mary App — tipografia
  * Espelha --text-xs .. --text-xxl de global.css.
- * Fonte do sistema (equivalente ao stack "Inter, -apple-system..."
- * do CSS original — RN usa a fonte nativa da plataforma por padrão,
- * que já é bem próxima esteticamente).
+ * Fonte: Inter (Google Fonts, via @expo-google-fonts/inter),
+ * carregada em App.tsx com useFonts(). `fontFamily` abaixo é
+ * o antigo fallback de fonte do sistema — não é mais usado
+ * pelos componentes de texto (ver Text/TextInput em
+ * components/AppText), mas fica disponível caso precise.
  */
 
 import { Platform } from "react-native";
@@ -29,3 +31,24 @@ export const fontFamily = Platform.select({
   android: "sans-serif",
   default: "System",
 });
+
+/**
+ * Inter — uma família por peso. Em React Native, fontes
+ * customizadas não usam fontWeight: cada peso é um arquivo
+ * separado, então o componente AppText traduz o fontWeight
+ * do estilo para a família certa (ver components/AppText).
+ */
+export const fontFamilies = {
+  regular: "Inter_400Regular",
+  semibold: "Inter_600SemiBold",
+  bold: "Inter_700Bold",
+  extraBold: "Inter_800ExtraBold",
+} as const;
+
+export function fontFamilyPorPeso(peso?: string | number): string {
+  const n = typeof peso === "string" ? parseInt(peso, 10) : peso;
+  if (!n || n < 500) return fontFamilies.regular;
+  if (n < 700) return fontFamilies.semibold;
+  if (n < 800) return fontFamilies.bold;
+  return fontFamilies.extraBold;
+}

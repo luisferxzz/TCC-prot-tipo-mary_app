@@ -6,16 +6,7 @@
  */
 
 import React, { useRef, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Dimensions,
-  Pressable,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-} from "react-native";
+import { View, StyleSheet, ScrollView, Dimensions, Pressable, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { colors, radius, fontSizes, fontWeights } from "../../theme";
@@ -23,14 +14,16 @@ import { useTranslation } from "../../i18n";
 import { concluirOnboarding } from "../../services/storage/preferences";
 import { Button } from "../../components/Button";
 import type { RootStackNavigation } from "../../navigation/types";
+import { Text } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const { width } = Dimensions.get("window");
 
 const SLIDES = [
-  { icon: "🛡️", titleKey: "index.slide1Title", textKey: "index.slide1Text", buttonKey: "index.slide1Button" },
-  { icon: "🆘", titleKey: "index.slide2Title", textKey: "index.slide2Text", buttonKey: "index.slide2Button" },
-  { icon: "📍", titleKey: "index.slide3Title", textKey: "index.slide3Text", buttonKey: "index.slide3Button" },
-  { icon: "✅", titleKey: "index.slide4Title", textKey: "index.slide4Text", buttonKey: "index.slide4Button" },
+  { icon: "shield-checkmark" as const, titleKey: "index.slide1Title", textKey: "index.slide1Text", buttonKey: "index.slide1Button" },
+  { icon: "warning" as const, titleKey: "index.slide2Title", textKey: "index.slide2Text", buttonKey: "index.slide2Button" },
+  { icon: "location" as const, titleKey: "index.slide3Title", textKey: "index.slide3Text", buttonKey: "index.slide3Button" },
+  { icon: "checkmark-circle" as const, titleKey: "index.slide4Title", textKey: "index.slide4Text", buttonKey: "index.slide4Button" },
 ];
 
 export function OnboardingScreen() {
@@ -91,7 +84,7 @@ export function OnboardingScreen() {
         {SLIDES.map((slide, indice) => (
           <View key={indice} style={[styles.slide, { width }]}>
             <View style={styles.iconWrapper}>
-              <Text style={styles.icon}>{slide.icon}</Text>
+              <Ionicons name={slide.icon} size={42} color={colors.primary} />
             </View>
 
             <Text style={styles.slideTitle}>{t(slide.titleKey)}</Text>

@@ -10,7 +10,7 @@
  */
 
 import React, { useCallback, useState } from "react";
-import { View, Text, Pressable, Switch, FlatList, StyleSheet } from "react-native";
+import { View, Pressable, Switch, FlatList, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { colors, spacing, radius, fontSizes, fontWeights } from "../../theme";
@@ -23,6 +23,8 @@ import {
   deveNotificar,
 } from "../../services/storage/contacts";
 import type { ProfileStackNavigation } from "../../navigation/types";
+import { Text } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export function EmergencySettingsScreen() {
   const navigation = useNavigation<ProfileStackNavigation>();
@@ -51,7 +53,7 @@ export function EmergencySettingsScreen() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backButton} accessibilityLabel={t("common.back")}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{t("emergenciaConfig.title")}</Text>
@@ -61,7 +63,7 @@ export function EmergencySettingsScreen() {
 
       {contatos.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>👥</Text>
+          <Ionicons name="people-outline" size={30} color={colors.textMuted} style={{ marginBottom: 4 }} />
           <Text style={styles.emptyText}>{t("emergenciaConfig.emptyText")}</Text>
           <Button
             label={t("emergenciaConfig.manageAllContacts")}

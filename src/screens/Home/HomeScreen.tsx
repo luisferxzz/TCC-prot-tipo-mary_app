@@ -25,7 +25,7 @@
  */
 
 import React, { useCallback, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -39,12 +39,26 @@ import { useSecurityStatus } from "../../hooks/useSecurityStatus";
 import { tempoRelativo } from "../../utils/relativeTime";
 import { obterDicaDoDia, obterOutrasDicas } from "../../content/securityTips";
 import type { AppTabsNavigation } from "../../navigation/types";
+import { Text } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 function saudacaoPorHorario(): "morning" | "afternoon" | "night" {
   const hora = new Date().getHours();
   if (hora < 12) return "morning";
   if (hora < 18) return "afternoon";
   return "night";
+}
+
+// Texto + seta de "vai pra outra tela" — usado nos links dos
+// cards de resumo (mapa, contatos, histórico), em vez de um
+// "→" preso dentro da tradução.
+function LinkText({ children }: { children: string }) {
+  return (
+    <View style={styles.linkRow}>
+      <Text style={styles.summaryLink}>{children}</Text>
+      <Ionicons name="chevron-forward" size={13} color={colors.primaryLight} />
+    </View>
+  );
 }
 
 // Delay-base entre cada bloco da tela — pequeno o bastante
@@ -166,17 +180,19 @@ export function HomeScreen() {
           <Text style={styles.sectionTitle}>{t("home.securityUpdatesTitle")}</Text>
 
           <AppCard style={styles.tipCard}>
-            <Text style={styles.tipLabel}>{t("home.tipOfDayLabel")}</Text>
-            <Text style={styles.tipText}>
-              {dicaDoDia.icon} {t(dicaDoDia.textKey)}
-            </Text>
+            <View style={styles.tipLabelRow}>
+              <Ionicons name="bulb-outline" size={13} color={colors.primaryLight} />
+              <Text style={styles.tipLabel}>{t("home.tipOfDayLabel")}</Text>
+            </View>
+            <Text style={styles.tipText}>{t(dicaDoDia.textKey)}</Text>
           </AppCard>
 
           {outrasDicas.map((dica) => (
             <AppCard key={dica.id} style={styles.tipCardSmall}>
-              <Text style={styles.tipLabel}>
-                {dica.icon} {t(dica.categoryKey)}
-              </Text>
+              <View style={styles.tipLabelRow}>
+                <Ionicons name={dica.icon as any} size={13} color={colors.primaryLight} />
+                <Text style={styles.tipLabel}>{t(dica.categoryKey)}</Text>
+              </View>
               <Text style={styles.tipText}>{t(dica.textKey)}</Text>
             </AppCard>
           ))}
@@ -188,13 +204,16 @@ export function HomeScreen() {
           style={styles.section}
         >
           <AppCard style={styles.summaryCard} onPress={() => navigation.navigate("Mapa")}>
-            <Text style={styles.summaryTitle}>{t("home.locationSummaryTitle")}</Text>
+            <View style={styles.summaryTitleRow}>
+              <Ionicons name="location-outline" size={15} color={colors.text} />
+              <Text style={styles.summaryTitle}>{t("home.locationSummaryTitle")}</Text>
+            </View>
             <Text style={styles.summaryText}>
               {localizacao
                 ? t("home.locationUpdatedAgo", { time: tempoRelativo(localizacao.atualizadoEm, t) })
                 : t("home.locationNotVerified")}
             </Text>
-            <Text style={styles.summaryLink}>{t("home.viewOnMap")}</Text>
+            <LinkText>{t("home.viewOnMap")}</LinkText>
           </AppCard>
         </Animated.View>
 
@@ -207,12 +226,15 @@ export function HomeScreen() {
             style={styles.summaryCard}
             onPress={() => navigation.navigate("Emergencia", { screen: "Contacts" })}
           >
-            <Text style={styles.summaryTitle}>{t("home.contactsSummaryTitle")}</Text>
+            <View style={styles.summaryTitleRow}>
+              <Ionicons name="people-outline" size={15} color={colors.text} />
+              <Text style={styles.summaryTitle}>{t("home.contactsSummaryTitle")}</Text>
+            </View>
 
             {contatos.length === 0 ? (
               <>
                 <Text style={styles.summaryText}>{t("home.contactsNoneText")}</Text>
-                <Text style={styles.summaryLink}>{t("home.addContact")}</Text>
+                <LinkText>{t("home.addContact")}</LinkText>
               </>
             ) : (
               <>
@@ -227,7 +249,7 @@ export function HomeScreen() {
                 <Text style={styles.summaryNames} numberOfLines={1}>
                   {contatos.slice(0, 3).map((c) => c.nome).join(" • ")}
                 </Text>
-                <Text style={styles.summaryLink}>{t("home.manageContacts")}</Text>
+                <LinkText>{t("home.manageContacts")}</LinkText>
               </>
             )}
           </AppCard>
@@ -244,21 +266,21 @@ export function HomeScreen() {
               <Pressable
                 onPress={() => navigation.navigate("Emergencia", { screen: "EmergencyHome" })}
               >
-                <Text style={styles.summaryLink}>{t("home.viewHistory")}</Text>
+                <LinkText>{t("home.viewHistory")}</LinkText>
               </Pressable>
             )}
           </View>
 
           {ultimasAtividades.length === 0 ? (
             <AppCard style={styles.emptyActivity}>
-              <Text style={styles.emptyActivityIcon}>🛡️</Text>
+              <Ionicons name="shield-checkmark-outline" size={26} color={colors.textMuted} />
               <Text style={styles.emptyActivityText}>{t("home.noActivity")}</Text>
             </AppCard>
           ) : (
             <AppCard style={{ gap: spacing.sm }}>
               {ultimasAtividades.map((registro) => (
                 <View key={registro.id} style={styles.activityRow}>
-                  <Text style={styles.activityIcon}>🚨</Text>
+                  <Ionicons name="alert-circle" size={16} color={colors.primary} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.activityStatus}>{registro.status}</Text>
                     <Text style={styles.activityDate}>
@@ -305,14 +327,17 @@ const styles = StyleSheet.create({
 
   tipCard: { gap: spacing.xs },
   tipCardSmall: { gap: spacing.xs, marginTop: spacing.sm },
+  tipLabelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   tipLabel: { color: colors.primaryLight, fontSize: fontSizes.xs, fontWeight: fontWeights.bold },
   tipText: { color: colors.textSecondary, fontSize: fontSizes.xs, lineHeight: 18 },
 
   summaryCard: { gap: 4 },
+  summaryTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   summaryTitle: { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.bold },
   summaryText: { color: colors.textSecondary, fontSize: fontSizes.xs },
   summaryNames: { color: colors.textMuted, fontSize: 11 },
-  summaryLink: { marginTop: 4, color: colors.primaryLight, fontSize: 12, fontWeight: fontWeights.medium },
+  linkRow: { marginTop: 4, flexDirection: "row", alignItems: "center", gap: 2 },
+  summaryLink: { color: colors.primaryLight, fontSize: 12, fontWeight: fontWeights.medium },
 
   emptyActivity: { alignItems: "center", gap: spacing.sm, paddingVertical: spacing.xl },
   emptyActivityIcon: { fontSize: 26 },

@@ -71,7 +71,6 @@ export const ptBR = {
     email: "E-mail",
     phone: "Telefone",
     birthDate: "Data de nascimento",
-    invalidBirthDate: "Data de nascimento inválida. Use o formato DD/MM/AAAA.",
     password: "Senha",
     confirmPassword: "Confirmar senha",
     city: "Cidade",
@@ -313,10 +312,7 @@ export const ptBR = {
     subtitle: "Lembretes e dicas dentro do Mary App",
     toggleLabel: "Dicas e lembretes de segurança",
     toggleDescription:
-      "Mostra a dica do dia na tela inicial e agenda um lembrete semanal no seu aparelho para conferir contatos e localização. Isso é uma notificação local — o Mary App ainda não envia notificações vindas de um servidor.",
-    permissionDeniedTitle: "Permissão de notificação negada",
-    permissionDeniedText:
-      "A preferência foi salva, mas seu aparelho não vai mostrar o lembrete semanal até você permitir notificações do Mary App nas configurações do sistema.",
+      "Mostra a dica do dia e avisos de segurança na tela inicial. O Mary App ainda não envia notificações push do sistema — isso é uma preferência interna do app.",
   },
 
   privacidade: {
@@ -342,26 +338,6 @@ export const ptBR = {
       "Essa ação não pode ser desfeita. Contatos de emergência, histórico e localização salva neste aparelho serão apagados.",
     deleteConfirmButton: "Apagar",
     deleteSuccess: "Dados locais apagados.",
-  },
-
-  gravacoes: {
-    cardTitle: "Gravação de segurança",
-    cardSubtitle: "Toque para gravar um áudio durante uma situação de risco",
-    start: "Iniciar gravação",
-    stop: "Parar gravação",
-    viewAll: "Ver gravações",
-    title: "Gravações de segurança",
-    subtitle: "Áudios gravados durante situações de emergência",
-    emptyText: "Nenhuma gravação ainda. Elas aparecem aqui depois que você gravar pela tela de Emergência.",
-    play: "Tocar",
-    pause: "Pausar",
-    share: "Compartilhar",
-    delete: "Excluir",
-    shareUnavailable: "Compartilhamento não disponível neste aparelho.",
-    deleteConfirmTitle: "Excluir gravação?",
-    deleteConfirmText: "Essa ação não pode ser desfeita.",
-    permissionDeniedTitle: "Permissão de microfone negada",
-    permissionDeniedText: "Para gravar um áudio de segurança, permita o acesso ao microfone nas configurações do sistema.",
   },
 
   emergenciaConfig: {

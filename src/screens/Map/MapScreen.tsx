@@ -69,6 +69,11 @@ export function MapScreen() {
     switch (mensagem.tipo) {
       case "pronto":
         await enviarFavoritosAtualizados();
+        // Pede a localização assim que o mapa carrega — antes
+        // o usuário precisava tocar no botão 📍 pra começar a
+        // ver onde está, o que não faz sentido num app de
+        // segurança (quanto antes souber a posição, melhor).
+        await tratarPedidoDeLocalizacao();
         break;
 
       case "pedir_localizacao":

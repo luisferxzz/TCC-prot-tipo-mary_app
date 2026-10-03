@@ -9,6 +9,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { EmergencyScreen } from "../screens/Emergency/EmergencyScreen";
 import { ContactsScreen } from "../screens/Emergency/ContactsScreen";
+import { RecordingsScreen } from "../screens/Emergency/RecordingsScreen";
 import type { EmergencyStackParamList } from "./types";
 
 const Stack = createNativeStackNavigator<EmergencyStackParamList>();
@@ -18,6 +19,7 @@ export function EmergencyStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="EmergencyHome" component={EmergencyScreen} />
       <Stack.Screen name="Contacts" component={ContactsScreen} />
+      <Stack.Screen name="Recordings" component={RecordingsScreen} />
     </Stack.Navigator>
   );
 }

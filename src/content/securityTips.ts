@@ -14,6 +14,7 @@
 
 export type DicaSeguranca = {
   id: string;
+  /** Nome de um ícone do Ionicons (ver https://icons.expo.fyi) */
   icon: string;
   categoryKey: string;
   textKey: string;
@@ -22,25 +23,25 @@ export type DicaSeguranca = {
 export const DICAS_SEGURANCA: DicaSeguranca[] = [
   {
     id: "contatos-atualizados",
-    icon: "🛡️",
+    icon: "shield-checkmark-outline",
     categoryKey: "home.tipCategoryGeneral",
     textKey: "home.tipContactsUpdated",
   },
   {
     id: "links-desconhecidos",
-    icon: "📱",
+    icon: "phone-portrait-outline",
     categoryKey: "home.tipCategoryDigital",
     textKey: "home.tipUnknownLinks",
   },
   {
     id: "transito-seguro",
-    icon: "🚗",
+    icon: "car-outline",
     categoryKey: "home.tipCategoryTraffic",
     textKey: "home.tipSafeDriving",
   },
   {
     id: "compartilhar-localizacao",
-    icon: "📍",
+    icon: "location-outline",
     categoryKey: "home.tipCategoryLocation",
     textKey: "home.tipShareLocation",
   },

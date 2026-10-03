@@ -14,6 +14,9 @@ export const STORAGE_KEYS = {
   FAVORITOS: "mary_favoritos",
   ONBOARDING: "mary_onboarding_concluido",
   IDIOMA: "mary_idioma",
+  // Só existe no mobile (gravação de áudio não tem equivalente
+  // no app.js Web) — por isso não está no comentário acima.
+  GRAVACOES: "mary_gravacoes",
 } as const;
 
 // Chaves que NÃO são escopadas por usuário — precisam

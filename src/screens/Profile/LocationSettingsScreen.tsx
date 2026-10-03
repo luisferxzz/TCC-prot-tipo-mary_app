@@ -6,7 +6,7 @@
  */
 
 import React, { useCallback, useState } from "react";
-import { View, Text, Pressable, StyleSheet, Linking } from "react-native";
+import { View, Pressable, StyleSheet, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import * as Location from "expo-location";
@@ -21,6 +21,8 @@ import {
 } from "../../services/location/location";
 import { tempoRelativo } from "../../utils/relativeTime";
 import type { ProfileStackNavigation } from "../../navigation/types";
+import { Text } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 type StatusPermissao = "concedida" | "negada" | "desconhecida";
 
@@ -61,7 +63,7 @@ export function LocationSettingsScreen() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backButton} accessibilityLabel={t("common.back")}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
         </Pressable>
         <View>
           <Text style={styles.title}>{t("localizacaoConfig.title")}</Text>
@@ -72,7 +74,14 @@ export function LocationSettingsScreen() {
       <View style={styles.content}>
         <AppCard style={{ gap: spacing.sm }}>
           <Text style={styles.cardLabel}>{t("localizacaoConfig.permissionLabel")}</Text>
-          <Text style={styles.cardValue}>{textoPermissao}</Text>
+          <View style={styles.statusRow}>
+            <Ionicons
+              name={statusPermissao === "concedida" ? "checkmark-circle" : "alert-circle-outline"}
+              size={15}
+              color={statusPermissao === "concedida" ? colors.successLight : colors.warning}
+            />
+            <Text style={styles.cardValue}>{textoPermissao}</Text>
+          </View>
 
           {statusPermissao !== "concedida" && (
             <Button
@@ -117,5 +126,6 @@ const styles = StyleSheet.create({
   subtitle: { marginTop: 2, color: colors.textSecondary, fontSize: fontSizes.xs, maxWidth: 260 },
   content: { paddingHorizontal: spacing.lg },
   cardLabel: { color: colors.textSecondary, fontSize: 12, fontWeight: fontWeights.medium },
+  statusRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 },
   cardValue: { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.bold },
 });

@@ -17,13 +17,14 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Animated, ActivityIndicator, Pressable } from "react-native";
+import { View, StyleSheet, Animated, ActivityIndicator, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors, radius, fontSizes, fontWeights } from "../../theme";
 import { useTranslation } from "../../i18n";
 import { estaLogado } from "../../services/supabase/auth";
 import { onboardingConcluido } from "../../services/storage/preferences";
 import type { RootStackNavigation } from "../../navigation/types";
+import { Text } from "../../components/AppText";
 
 const TEMPO_LIMITE_MS = 5000;
 const TEMPO_ATE_MOSTRAR_BOTAO_MS = 4000;

@@ -49,6 +49,7 @@ export type EmergencyStackParamList = {
   // fluxo de SOS que já existe aqui, sem duplicar a lógica.
   EmergencyHome: { autoTriggerSOS?: boolean } | undefined;
   Contacts: undefined;
+  Recordings: undefined;
 };
 
 export type EmergencyStackNavigation = CompositeNavigationProp<

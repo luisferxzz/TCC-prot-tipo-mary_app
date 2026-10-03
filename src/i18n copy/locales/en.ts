@@ -71,7 +71,6 @@ export const en: TranslationSchema = {
     email: "Email",
     phone: "Phone",
     birthDate: "Date of birth",
-    invalidBirthDate: "Invalid date of birth. Use the DD/MM/YYYY format.",
     password: "Password",
     confirmPassword: "Confirm password",
     city: "City",
@@ -313,10 +312,7 @@ export const en: TranslationSchema = {
     subtitle: "Reminders and tips inside Mary App",
     toggleLabel: "Security tips and reminders",
     toggleDescription:
-      "Shows the tip of the day on the home screen and schedules a weekly reminder on your device to check your contacts and location. This is a local notification — Mary App doesn't send server-triggered push notifications yet.",
-    permissionDeniedTitle: "Notification permission denied",
-    permissionDeniedText:
-      "The preference was saved, but your device won't show the weekly reminder until you allow notifications for Mary App in system settings.",
+      "Shows the tip of the day and security alerts on the home screen. Mary App doesn't send system push notifications yet — this is an in-app preference.",
   },
 
   privacidade: {
@@ -342,26 +338,6 @@ export const en: TranslationSchema = {
       "This can't be undone. Emergency contacts, history and saved location on this device will be erased.",
     deleteConfirmButton: "Erase",
     deleteSuccess: "Local data erased.",
-  },
-
-  gravacoes: {
-    cardTitle: "Safety recording",
-    cardSubtitle: "Tap to record audio during a risky situation",
-    start: "Start recording",
-    stop: "Stop recording",
-    viewAll: "View recordings",
-    title: "Safety recordings",
-    subtitle: "Audio recorded during emergency situations",
-    emptyText: "No recordings yet. They'll show up here after you record one from the Emergency screen.",
-    play: "Play",
-    pause: "Pause",
-    share: "Share",
-    delete: "Delete",
-    shareUnavailable: "Sharing isn't available on this device.",
-    deleteConfirmTitle: "Delete recording?",
-    deleteConfirmText: "This can't be undone.",
-    permissionDeniedTitle: "Microphone permission denied",
-    permissionDeniedText: "To record a safety audio, allow microphone access in system settings.",
   },
 
   emergenciaConfig: {

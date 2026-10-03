@@ -3,17 +3,15 @@
  *
  * Real e funcional: localização (expo-location), SOS com
  * confirmação, números oficiais com confirmação antes de
- * ligar, contatos (link pro CRUD completo), histórico.
- *
- * Propositalmente NÃO funcional ainda (avisa, não finge):
- * "Hospital mais próximo" / "Polícia mais próxima" —
- * depende de uma fonte de dados de mapas que ainda não
- * decidimos (Passo 4). Estrutura já preparada pra receber
- * isso depois, sem fingir que funciona agora.
+ * ligar, contatos (link pro CRUD completo), histórico,
+ * hospital/delegacia mais próximos (Overpass API — OSM,
+ * grátis, sem chave, mesma família do Mapa), gravação de
+ * áudio de segurança (expo-audio — sempre uma ação explícita
+ * do usuário, nunca automática junto com o SOS).
  */
 
 import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Linking } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable, Alert, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
@@ -31,17 +29,102 @@ import {
 import { obterContatos, Contato, deveNotificar } from "../../services/storage/contacts";
 import { obterEmergencias, RegistroEmergencia } from "../../services/storage/emergencyHistory";
 import { dispararSOS } from "../../services/emergency/sos";
+import { useNearbyPlaces } from "../../hooks/useNearbyPlaces";
+import { formatarDistancia, linkParaRota, LocalProximo } from "../../services/places/nearbyPlaces";
+import { useEmergencyRecorder } from "../../hooks/useEmergencyRecorder";
+import { formatarDuracao } from "../../services/audio/emergencyRecorder";
 import type { EmergencyStackNavigation, EmergencyStackParamList } from "../../navigation/types";
+import { Text } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 type EmergencyHomeRoute = RouteProp<EmergencyStackParamList, "EmergencyHome">;
 
 function numerosOficiais(t: (k: string) => string) {
   return [
-    { nome: t("emergencia.samuName"), numero: "192", descricao: t("emergencia.samuDesc"), icone: "🚑" },
-    { nome: t("emergencia.policeName"), numero: "190", descricao: t("emergencia.policeDesc"), icone: "👮" },
-    { nome: t("emergencia.fireName"), numero: "193", descricao: t("emergencia.fireDesc"), icone: "🚒" },
+    { nome: t("emergencia.samuName"), numero: "192", descricao: t("emergencia.samuDesc"), icone: "medkit" as const },
+    { nome: t("emergencia.policeName"), numero: "190", descricao: t("emergencia.policeDesc"), icone: "shield" as const },
+    { nome: t("emergencia.fireName"), numero: "193", descricao: t("emergencia.fireDesc"), icone: "flame" as const },
   ];
 }
+
+function LinhaLocalProximo({
+  local,
+  tipoLabel,
+  naoEncontradoLabel,
+  icone,
+}: {
+  local: LocalProximo | null;
+  tipoLabel: string;
+  naoEncontradoLabel: string;
+  icone: React.ComponentProps<typeof Ionicons>["name"];
+}) {
+  return (
+    <AppCard style={estilosLocalProximo.card}>
+      <View style={estilosLocalProximo.row}>
+        <View style={estilosLocalProximo.iconWrapper}>
+          <Ionicons name={icone} size={18} color={colors.primary} />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={estilosLocalProximo.tipo}>{tipoLabel}</Text>
+          {local ? (
+            <>
+              <Text style={estilosLocalProximo.nome} numberOfLines={1}>{local.nome}</Text>
+              <Text style={estilosLocalProximo.distancia}>{formatarDistancia(local.distanciaMetros)}</Text>
+            </>
+          ) : (
+            <Text style={estilosLocalProximo.naoEncontrado}>{naoEncontradoLabel}</Text>
+          )}
+        </View>
+
+        {local && (
+          <Pressable
+            onPress={() => Linking.openURL(linkParaRota(local))}
+            style={estilosLocalProximo.routeButton}
+            accessibilityLabel={`Como chegar em ${local.nome}`}
+          >
+            <Ionicons name="navigate-outline" size={16} color={colors.primary} />
+          </Pressable>
+        )}
+      </View>
+    </AppCard>
+  );
+}
+
+const estilosLocalProximo = StyleSheet.create({
+  card: { padding: spacing.md },
+  row: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  iconWrapper: {
+    width: 36, height: 36, borderRadius: radius.md,
+    backgroundColor: `${colors.primary}22`, alignItems: "center", justifyContent: "center",
+  },
+  tipo: { color: colors.textMuted, fontSize: 11, fontWeight: fontWeights.medium },
+  nome: { marginTop: 2, color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.bold },
+  distancia: { marginTop: 2, color: colors.textSecondary, fontSize: 11 },
+  naoEncontrado: { marginTop: 2, color: colors.textMuted, fontSize: fontSizes.xs },
+  routeButton: {
+    width: 34, height: 34, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
+    alignItems: "center", justifyContent: "center",
+  },
+});
+
+const estilosGravacao = StyleSheet.create({
+  card: { padding: spacing.md, gap: spacing.sm },
+  row: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  iconWrapper: {
+    width: 36, height: 36, borderRadius: radius.md,
+    backgroundColor: `${colors.primary}22`, alignItems: "center", justifyContent: "center",
+  },
+  titulo: { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.bold },
+  subtitulo: { marginTop: 2, color: colors.textSecondary, fontSize: 11 },
+  recordButton: {
+    width: 40, height: 40, borderRadius: radius.full, backgroundColor: colors.primary,
+    alignItems: "center", justifyContent: "center",
+  },
+  recordButtonAtivo: { backgroundColor: colors.danger },
+  link: { flexDirection: "row", alignItems: "center", gap: 2, alignSelf: "flex-start" },
+  linkText: { color: colors.primaryLight, fontSize: 12, fontWeight: fontWeights.medium },
+});
 
 export function EmergencyScreen() {
   const navigation = useNavigation<EmergencyStackNavigation>();
@@ -53,6 +136,28 @@ export function EmergencyScreen() {
   const [erroLocalizacao, setErroLocalizacao] = useState<string | null>(null);
   const [contatos, setContatos] = useState<Contato[]>([]);
   const [historico, setHistorico] = useState<RegistroEmergencia[]>([]);
+
+  const { hospital, policia, status: statusLocaisProximos } = useNearbyPlaces(
+    localizacao?.latitude ?? null,
+    localizacao?.longitude ?? null
+  );
+
+  const { status: statusGravacao, gravando, duracaoMs, iniciar: iniciarGravacaoBase, parar: pararGravacao } =
+    useEmergencyRecorder();
+
+  const iniciarGravacao = useCallback(async () => {
+    await iniciarGravacaoBase();
+  }, [iniciarGravacaoBase]);
+
+  const aoPararGravacao = useCallback(async () => {
+    await pararGravacao();
+  }, [pararGravacao]);
+
+  useEffect(() => {
+    if (statusGravacao === "permissao_negada") {
+      Alert.alert(t("gravacoes.permissionDeniedTitle"), t("gravacoes.permissionDeniedText"));
+    }
+  }, [statusGravacao, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -155,17 +260,51 @@ export function EmergencyScreen() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeInDown.duration(400)} style={styles.header}>
-          <Text style={styles.title}>{t("emergencia.title")}</Text>
+          <View style={styles.headerTitleRow}>
+            <Ionicons name="warning" size={20} color={colors.primary} />
+            <Text style={styles.title}>{t("emergencia.title")}</Text>
+          </View>
           <Text style={styles.subtitle}>{t("emergencia.subtitle")}</Text>
         </Animated.View>
 
         {/* SOS */}
         <Animated.View entering={FadeInDown.duration(400).delay(80)}>
           <Pressable onPress={acionarSOS} style={styles.sosCard} accessibilityRole="button">
-            <Text style={styles.sosIcon}>🆘</Text>
+            <Ionicons name="warning" size={30} color={colors.white} style={{ marginBottom: 4 }} />
             <Text style={styles.sosTitle}>{t("emergencia.sosTitle")}</Text>
             <Text style={styles.sosSubtitle}>{t("emergencia.sosSubtitle")}</Text>
           </Pressable>
+        </Animated.View>
+
+        {/* GRAVAÇÃO DE SEGURANÇA */}
+        <Animated.View entering={FadeInDown.duration(400).delay(120)}>
+          <AppCard style={estilosGravacao.card}>
+            <View style={estilosGravacao.row}>
+              <View style={estilosGravacao.iconWrapper}>
+                <Ionicons name={gravando ? "radio-button-on" : "mic-outline"} size={18} color={gravando ? colors.danger : colors.primary} />
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <Text style={estilosGravacao.titulo}>{t("gravacoes.cardTitle")}</Text>
+                <Text style={estilosGravacao.subtitulo}>
+                  {gravando ? formatarDuracao(duracaoMs) : t("gravacoes.cardSubtitle")}
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={gravando ? aoPararGravacao : iniciarGravacao}
+                style={[estilosGravacao.recordButton, gravando && estilosGravacao.recordButtonAtivo]}
+                accessibilityLabel={gravando ? t("gravacoes.stop") : t("gravacoes.start")}
+              >
+                <Ionicons name={gravando ? "stop" : "mic"} size={16} color={colors.white} />
+              </Pressable>
+            </View>
+
+            <Pressable onPress={() => navigation.navigate("Recordings")} style={estilosGravacao.link}>
+              <Text style={estilosGravacao.linkText}>{t("gravacoes.viewAll")}</Text>
+              <Ionicons name="chevron-forward" size={12} color={colors.primaryLight} />
+            </Pressable>
+          </AppCard>
         </Animated.View>
 
         {/* LOCALIZAÇÃO */}
@@ -174,7 +313,7 @@ export function EmergencyScreen() {
 
           <AppCard style={styles.locationCard}>
             <View style={styles.locationRow}>
-              <Text style={styles.locationIcon}>📍</Text>
+              <Ionicons name="location" size={18} color={colors.primary} />
               <View style={{ flex: 1 }}>
                 {localizacao ? (
                   <>
@@ -212,7 +351,7 @@ export function EmergencyScreen() {
                 style={styles.numberRow}
                 onPress={() => ligarPara(item.nome, item.numero)}
               >
-                <Text style={styles.numberIcon}>{item.icone}</Text>
+                <Ionicons name={item.icone} size={20} color={colors.primary} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.numberName}>{item.nome}</Text>
                   <Text style={styles.numberDesc}>{item.numero} — {item.descricao}</Text>
@@ -223,16 +362,41 @@ export function EmergencyScreen() {
           </View>
         </Animated.View>
 
-        {/* HOSPITAL / POLÍCIA — ESTRUTURA PREPARADA, NÃO FUNCIONAL */}
+        {/* HOSPITAL / POLÍCIA */}
         <Animated.View entering={FadeInDown.duration(400).delay(300)} style={styles.section}>
           <Text style={styles.sectionTitle}>{t("emergencia.nearbyPlaces")}</Text>
 
-          <AppCard style={styles.preparedCard}>
-            <Text style={styles.preparedIcon}>🗺️</Text>
-            <Text style={styles.preparedText}>
-              {t("emergencia.nearbyPlacesText")}
-            </Text>
-          </AppCard>
+          {!localizacao ? (
+            <AppCard style={styles.preparedCard}>
+              <Ionicons name="map-outline" size={26} color={colors.textMuted} />
+              <Text style={styles.preparedText}>{t("emergencia.nearbyPlacesNeedsLocation")}</Text>
+            </AppCard>
+          ) : statusLocaisProximos === "buscando" ? (
+            <AppCard style={styles.preparedCard}>
+              <Ionicons name="search" size={24} color={colors.textMuted} />
+              <Text style={styles.preparedText}>{t("emergencia.nearbyPlacesLoading")}</Text>
+            </AppCard>
+          ) : statusLocaisProximos === "erro" ? (
+            <AppCard style={styles.preparedCard}>
+              <Ionicons name="cloud-offline-outline" size={26} color={colors.textMuted} />
+              <Text style={styles.preparedText}>{t("emergencia.nearbyPlacesError")}</Text>
+            </AppCard>
+          ) : (
+            <View style={{ gap: spacing.sm }}>
+              <LinhaLocalProximo
+                local={hospital}
+                tipoLabel={t("emergencia.hospitalLabel")}
+                naoEncontradoLabel={t("emergencia.hospitalNotFound")}
+                icone="medkit"
+              />
+              <LinhaLocalProximo
+                local={policia}
+                tipoLabel={t("emergencia.policeLabel")}
+                naoEncontradoLabel={t("emergencia.policeNotFound")}
+                icone="shield"
+              />
+            </View>
+          )}
         </Animated.View>
 
         {/* CONTATOS */}
@@ -252,10 +416,16 @@ export function EmergencyScreen() {
             ) : (
               <View style={{ gap: spacing.sm }}>
                 {contatos.slice(0, 3).map((contato) => (
-                  <Text key={contato.id} style={styles.contactPreview}>
-                    {contato.favorito ? "⭐ " : "• "}
-                    {contato.nome} · {contato.relacao || "Contato"}
-                  </Text>
+                  <View key={contato.id} style={styles.contactPreviewRow}>
+                    <Ionicons
+                      name={contato.favorito ? "star" : "ellipse"}
+                      size={contato.favorito ? 13 : 6}
+                      color={contato.favorito ? colors.warning : colors.textMuted}
+                    />
+                    <Text style={styles.contactPreview}>
+                      {contato.nome} · {contato.relacao || "Contato"}
+                    </Text>
+                  </View>
                 ))}
               </View>
             )}
@@ -295,6 +465,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scrollContent: { padding: spacing.lg, paddingBottom: 140, gap: spacing.xl },
   header: { gap: 4 },
+  headerTitleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   title: { color: colors.text, fontSize: fontSizes.xl - 4, fontWeight: fontWeights.extraBold },
   subtitle: { color: colors.textSecondary, fontSize: fontSizes.xs },
   sosCard: {
@@ -334,6 +505,7 @@ const styles = StyleSheet.create({
   preparedIcon: { fontSize: 24 },
   preparedText: { color: colors.textMuted, fontSize: 11.5, textAlign: "center", lineHeight: 17 },
   emptyContactsText: { color: colors.textMuted, fontSize: fontSizes.xs, lineHeight: 18 },
+  contactPreviewRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   contactPreview: { color: colors.textSecondary, fontSize: fontSizes.xs },
   historyRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   historyStatus: { color: colors.text, fontSize: fontSizes.xs, fontWeight: fontWeights.medium },

@@ -3,11 +3,18 @@
  *
  * Reaproveita a mesma lógica do mapa.html/mapa.js da versão
  * Web: Leaflet + tiles OpenStreetMap/CARTO (grátis, sem
- * chave), busca via Nominatim, rotas via OSRM — tudo já
- * testado ali. Localização e favoritos são feitos pela ponte
- * com o React Native (o RN já tem os serviços corretos:
- * expo-location e AsyncStorage escopado por usuário) em vez
- * de duplicar essa lógica aqui dentro da WebView.
+ * chave), busca via Nominatim, rotas via OSRM, hospital/
+ * delegacia/farmácia via Overpass (mesma API já usada em
+ * services/places/nearbyPlaces.ts pro card da Emergência) —
+ * tudo real, sem mock. Localização e favoritos são feitos
+ * pela ponte com o React Native (o RN já tem os serviços
+ * corretos: expo-location e AsyncStorage escopado por
+ * usuário) em vez de duplicar essa lógica aqui dentro da
+ * WebView.
+ *
+ * IMPORTANTE: troque NOMINATIM_CONTATO (mais abaixo) por um
+ * e-mail de verdade antes de publicar — é exigido pela
+ * política de uso do Nominatim público.
  *
  * Protocolo da ponte:
  * WebView -> RN (window.ReactNativeWebView.postMessage):
@@ -60,6 +67,17 @@ export function gerarHtmlDoMapa(): string {
       width: 46px; height: 46px; border-radius: 23px; background: #d81b60;
       color: #fff; font-size: 19px; border: none; box-shadow: 0 6px 18px rgba(216,27,96,.4);
     }
+
+    .poi-toggle-wrap {
+      position: absolute; left: 12px; bottom: 190px; z-index: 1000;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .poi-toggle {
+      width: 40px; height: 40px; border-radius: 20px; background: #18181bee;
+      border: 1px solid #303036; font-size: 17px; box-shadow: 0 6px 18px rgba(0,0,0,.3);
+    }
+    .poi-toggle.active { border-color: rgba(216,27,96,.6); background: rgba(216,27,96,.18); }
+    .poi-loading { opacity: .5; }
 
     .panel {
       position: absolute; left: 0; right: 0; bottom: 0; z-index: 1000;
@@ -121,6 +139,12 @@ export function gerarHtmlDoMapa(): string {
   </div>
 
   <button class="locate-fab" id="locateButton">📍</button>
+
+  <div class="poi-toggle-wrap" id="poiToggleWrap">
+    <button class="poi-toggle" data-tipo="hospital" title="Hospitais">🏥</button>
+    <button class="poi-toggle" data-tipo="policia" title="Delegacias">👮</button>
+    <button class="poi-toggle" data-tipo="farmacia" title="Farmácias">💊</button>
+  </div>
 
   <div class="panel">
     <div class="row">
@@ -212,8 +236,15 @@ export function gerarHtmlDoMapa(): string {
       debounceBusca = setTimeout(function () { pesquisar(valor); }, 500);
     });
 
+    // A política de uso do Nominatim (nominatim.org/release-docs/latest/api/Search/)
+    // pede um jeito de identificar quem está usando o serviço público —
+    // troque NOMINATIM_CONTATO pelo e-mail/site real do Mary App antes
+    // de publicar. Sem isso, em uso real (muitos usuários), o servidor
+    // público pode bloquear o app por excesso de requisições anônimas.
+    var NOMINATIM_CONTATO = "contato@maryapp.com.br"; // TODO: confirmar e-mail real
+
     function pesquisar(consulta) {
-      var url = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6&countrycodes=br&q=" + encodeURIComponent(consulta);
+      var url = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6&countrycodes=br&email=" + encodeURIComponent(NOMINATIM_CONTATO) + "&q=" + encodeURIComponent(consulta);
       fetch(url, { headers: { "Accept-Language": "pt-BR" } })
         .then(function (r) { return r.json(); })
         .then(function (resultados) {
@@ -382,6 +413,103 @@ export function gerarHtmlDoMapa(): string {
 
       desenharRota(rotas[0]);
     }
+
+    // ===== LOCAIS PRÓXIMOS — hospital/delegacia/farmácia (Overpass API, OSM) =====
+    // Mesma API já usada na tela de Emergência pro "hospital mais
+    // próximo" (services/places/nearbyPlaces.ts) — aqui é a versão
+    // "mostrar todos num raio", direto no mapa, então fica melhor
+    // rodando aqui na WebView (que já faz fetch pra Nominatim/OSRM)
+    // do que ir e voltar pelo RN pra cada marcador.
+
+    var poiFiltros = {
+      hospital: '["amenity"="hospital"]',
+      policia: '["amenity"="police"]',
+      farmacia: '["amenity"="pharmacy"]'
+    };
+    var poiIcones = {
+      hospital: L.divIcon({ className: "", iconSize: [26,26], iconAnchor: [13,13], html: '<div style="font-size:19px;line-height:1">🏥</div>' }),
+      policia: L.divIcon({ className: "", iconSize: [26,26], iconAnchor: [13,13], html: '<div style="font-size:19px;line-height:1">👮</div>' }),
+      farmacia: L.divIcon({ className: "", iconSize: [26,26], iconAnchor: [13,13], html: '<div style="font-size:19px;line-height:1">💊</div>' })
+    };
+    var poiNomePadrao = { hospital: "Hospital", policia: "Delegacia", farmacia: "Farmácia" };
+    var poiLayers = {};
+    var poiAtivos = {};
+
+    function buscarPois(tipo) {
+      var bounds = mapa.getBounds();
+      var bbox = bounds.getSouth() + "," + bounds.getWest() + "," + bounds.getNorth() + "," + bounds.getEast();
+      var query = "[out:json][timeout:15];node" + poiFiltros[tipo] + "(" + bbox + ");out body 60;";
+
+      fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query })
+        .then(function (r) { return r.json(); })
+        .then(function (dados) {
+          if (!poiAtivos[tipo] || !poiLayers[tipo]) return; // usuário desativou enquanto buscava
+          poiLayers[tipo].clearLayers();
+          (dados.elements || []).forEach(function (el) {
+            if (!el.lat || !el.lon) return;
+            var nome = (el.tags && el.tags.name) || poiNomePadrao[tipo];
+            var endereco = [el.tags && el.tags["addr:street"], el.tags && el.tags["addr:housenumber"]]
+              .filter(Boolean).join(", ") || nome;
+
+            L.marker([el.lat, el.lon], { icon: poiIcones[tipo] })
+              .bindPopup(escapar(nome) + '<br><span style="color:#f06292;font-size:11px">Definido como destino — escolha o modo e toque em TRAÇAR ROTA</span>')
+              .on("click", function () {
+                selecionarDestino({ latitude: el.lat, longitude: el.lon, nome: nome, endereco: endereco });
+              })
+              .addTo(poiLayers[tipo]);
+          });
+        })
+        .catch(function () { /* camada de POI é um extra — falha silenciosa, sem travar o mapa */ });
+    }
+
+    function alternarPoi(tipo, botao) {
+      poiAtivos[tipo] = !poiAtivos[tipo];
+      botao.classList.toggle("active", poiAtivos[tipo]);
+
+      if (poiAtivos[tipo]) {
+        if (!poiLayers[tipo]) poiLayers[tipo] = L.layerGroup().addTo(mapa);
+        buscarPois(tipo);
+      } else if (poiLayers[tipo]) {
+        mapa.removeLayer(poiLayers[tipo]);
+        poiLayers[tipo] = null;
+      }
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll(".poi-toggle"), function (botao) {
+      botao.addEventListener("click", function () { alternarPoi(botao.dataset.tipo, botao); });
+    });
+
+    // Refaz a busca (só das camadas ligadas) quando o mapa para
+    // de se mover — assim os marcadores acompanham o que está
+    // visível na tela, sem gastar Overpass a cada pixel de pan.
+    var debouncePoi = null;
+    mapa.on("moveend", function () {
+      clearTimeout(debouncePoi);
+      debouncePoi = setTimeout(function () {
+        Object.keys(poiAtivos).forEach(function (tipo) {
+          if (poiAtivos[tipo]) buscarPois(tipo);
+        });
+      }, 700);
+    });
+
+    // ===== TOCAR NO MAPA PARA DEFINIR DESTINO (reverse geocoding) =====
+
+    mapa.on("click", function (evento) {
+      var lat = evento.latlng.lat, lng = evento.latlng.lng;
+      document.getElementById("statusText").textContent = "Obtendo endereço...";
+
+      var url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lng + "&email=" + encodeURIComponent(NOMINATIM_CONTATO);
+      fetch(url, { headers: { "Accept-Language": "pt-BR" } })
+        .then(function (r) { return r.json(); })
+        .then(function (dados) {
+          var nome = dados.display_name ? dados.display_name.split(",")[0] : "Local selecionado";
+          var endereco = dados.display_name || (lat.toFixed(5) + ", " + lng.toFixed(5));
+          selecionarDestino({ latitude: lat, longitude: lng, nome: nome, endereco: endereco });
+        })
+        .catch(function () {
+          selecionarDestino({ latitude: lat, longitude: lng, nome: "Local selecionado", endereco: lat.toFixed(5) + ", " + lng.toFixed(5) });
+        });
+    });
 
     // ===== RECEBER MENSAGENS DO RN =====
 

@@ -7,12 +7,15 @@
  */
 
 import React from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors, spacing, radius, fontSizes, fontWeights, shadows } from "../../theme";
+import { Text } from "../../components/AppText";
 
 export type ProfileOptionItem = {
   key: string;
-  icon: string;
+  /** Nome de um ícone do Ionicons — ver https://icons.expo.fyi */
+  icon: React.ComponentProps<typeof Ionicons>["name"];
   label: string;
   description?: string;
   onPress: () => void;
@@ -34,7 +37,7 @@ export function ProfileOptionGroup({ items }: { items: ProfileOptionItem[] }) {
           ]}
         >
           <View style={styles.iconWrapper}>
-            <Text style={styles.icon}>{item.icon}</Text>
+            <Ionicons name={item.icon} size={18} color={colors.primaryLight} />
           </View>
 
           <View style={styles.textArea}>

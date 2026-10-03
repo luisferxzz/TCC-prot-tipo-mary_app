@@ -7,9 +7,11 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors, spacing, radius, fontSizes, fontWeights, shadows } from "../../theme";
+import { Text } from "../../components/AppText";
 
 type EmergencyCardProps = {
   title: string;
@@ -33,7 +35,7 @@ export function EmergencyCard({ title, description, buttonLabel, onPress }: Emer
         style={styles.card}
       >
         <View style={styles.iconWrapper}>
-          <Text style={styles.icon}>🚨</Text>
+          <Ionicons name="warning" size={22} color={colors.white} />
         </View>
 
         <View style={styles.textArea}>

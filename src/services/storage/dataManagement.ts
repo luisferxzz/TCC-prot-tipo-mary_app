@@ -16,6 +16,7 @@ const CHAVES_APAGAVEIS = [
   STORAGE_KEYS.LOCALIZACAO,
   STORAGE_KEYS.FAVORITOS,
   STORAGE_KEYS.FOTO_PERFIL,
+  STORAGE_KEYS.GRAVACOES,
 ];
 
 export async function apagarDadosLocais(): Promise<void> {
@@ -23,4 +24,11 @@ export async function apagarDadosLocais(): Promise<void> {
     const chave = await chaveUsuario(chaveBase);
     await remover(chave);
   }
+
+  // Apaga os arquivos de áudio de verdade, não só a lista —
+  // senão eles ficam órfãos ocupando espaço no aparelho.
+  const { obterGravacoes } = await import("./emergencyRecordings");
+  const { excluirArquivoDaGravacao } = await import("../audio/emergencyRecorder");
+  const gravacoes = await obterGravacoes();
+  await Promise.all(gravacoes.map((g) => excluirArquivoDaGravacao(g.uri)));
 }

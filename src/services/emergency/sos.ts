@@ -11,6 +11,7 @@
 
 import { obterLocalizacaoAtual, LocalizacaoSalva } from "../location/location";
 import { registrarEmergencia } from "../storage/emergencyHistory";
+import { notificarSosRegistrado } from "../notifications/localNotifications";
 
 export type ResultadoSOS = {
   localizacao: LocalizacaoSalva | null;
@@ -24,6 +25,10 @@ export async function dispararSOS(): Promise<ResultadoSOS> {
     latitude: resultado.sucesso ? resultado.dados.latitude : undefined,
     longitude: resultado.sucesso ? resultado.dados.longitude : undefined,
   });
+
+  // Notificação local — útil se o app estiver em segundo plano
+  // no momento do SOS. Nunca bloqueia nem falha o fluxo acima.
+  notificarSosRegistrado();
 
   return { localizacao: resultado.sucesso ? resultado.dados : null };
 }

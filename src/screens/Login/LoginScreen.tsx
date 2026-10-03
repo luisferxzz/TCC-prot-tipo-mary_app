@@ -6,16 +6,7 @@
  */
 
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  Pressable,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from "react-native";
+import { View, StyleSheet, Pressable, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { colors, radius, fontSizes, fontWeights } from "../../theme";
@@ -23,6 +14,8 @@ import { useTranslation } from "../../i18n";
 import { Button } from "../../components/Button";
 import { fazerLogin, recuperarSenha } from "../../services/supabase/auth";
 import type { RootStackNavigation } from "../../navigation/types";
+import { Text, TextInput } from "../../components/AppText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -196,7 +189,7 @@ export function LoginScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={senhaVisivel ? "Ocultar senha" : "Mostrar senha"}
               >
-                <Text>{senhaVisivel ? "🙈" : "👁️"}</Text>
+                <Ionicons name={senhaVisivel ? "eye-off-outline" : "eye-outline"} size={18} color={colors.textSecondary} />
               </Pressable>
             </View>
             {Boolean(erroSenha) && <Text style={styles.errorText}>{erroSenha}</Text>}
@@ -264,9 +257,8 @@ export function LoginScreen() {
               é investigado.
           ===================================================== */}
           <Pressable onPress={aoEntrarSemConta} style={styles.devBypassButton}>
-            <Text style={styles.devBypassText}>
-              🧪 Entrar sem conta (modo de teste)
-            </Text>
+            <Ionicons name="flask-outline" size={14} color={colors.textMuted} />
+            <Text style={styles.devBypassText}>Entrar sem conta (modo de teste)</Text>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -337,7 +329,10 @@ const styles = StyleSheet.create({
     borderStyle: "dashed",
     borderColor: colors.warning,
     borderRadius: radius.md,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
   },
   devBypassText: {
     color: colors.warning,

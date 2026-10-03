@@ -71,7 +71,6 @@ export const es: TranslationSchema = {
     email: "Correo electrónico",
     phone: "Teléfono",
     birthDate: "Fecha de nacimiento",
-    invalidBirthDate: "Fecha de nacimiento inválida. Usa el formato DD/MM/AAAA.",
     password: "Contraseña",
     confirmPassword: "Confirmar contraseña",
     city: "Ciudad",
@@ -313,10 +312,7 @@ export const es: TranslationSchema = {
     subtitle: "Recordatorios y consejos dentro de Mary App",
     toggleLabel: "Consejos y recordatorios de seguridad",
     toggleDescription:
-      "Muestra el consejo del día en la pantalla de inicio y programa un recordatorio semanal en tu dispositivo para revisar tus contactos y tu ubicación. Esto es una notificación local — Mary App todavía no envía notificaciones desde un servidor.",
-    permissionDeniedTitle: "Permiso de notificación denegado",
-    permissionDeniedText:
-      "La preferencia fue guardada, pero tu dispositivo no mostrará el recordatorio semanal hasta que permitas notificaciones del Mary App en los ajustes del sistema.",
+      "Muestra el consejo del día y avisos de seguridad en la pantalla de inicio. Mary App todavía no envía notificaciones push del sistema — esto es una preferencia interna de la app.",
   },
 
   privacidade: {
@@ -342,26 +338,6 @@ export const es: TranslationSchema = {
       "Esta acción no se puede deshacer. Contactos de emergencia, historial y ubicación guardada en este dispositivo serán borrados.",
     deleteConfirmButton: "Borrar",
     deleteSuccess: "Datos locales borrados.",
-  },
-
-  gravacoes: {
-    cardTitle: "Grabación de seguridad",
-    cardSubtitle: "Toca para grabar un audio durante una situación de riesgo",
-    start: "Iniciar grabación",
-    stop: "Detener grabación",
-    viewAll: "Ver grabaciones",
-    title: "Grabaciones de seguridad",
-    subtitle: "Audios grabados durante situaciones de emergencia",
-    emptyText: "Todavía no hay grabaciones. Aparecerán aquí después de que grabes una desde la pantalla de Emergencia.",
-    play: "Reproducir",
-    pause: "Pausar",
-    share: "Compartir",
-    delete: "Eliminar",
-    shareUnavailable: "No se puede compartir en este dispositivo.",
-    deleteConfirmTitle: "¿Eliminar grabación?",
-    deleteConfirmText: "Esta acción no se puede deshacer.",
-    permissionDeniedTitle: "Permiso de micrófono denegado",
-    permissionDeniedText: "Para grabar un audio de seguridad, permite el acceso al micrófono en los ajustes del sistema.",
   },
 
   emergenciaConfig: {

@@ -9,21 +9,29 @@
  */
 
 import React, { useEffect } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { colors, radius, spacing, fontSizes, fontWeights, shadows } from "../../theme";
+import { Text } from "../../components/AppText";
 
-const ICONES: Record<string, string> = {
-  Home: "🏠",
-  Mapa: "📍",
-  Emergencia: "🚨",
-  Perfil: "👤",
+type NomeIonicon = React.ComponentProps<typeof Ionicons>["name"];
+
+const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
+
+// Um ícone "outline" pra aba inativa, preenchido pra aba ativa
+// — dá o mesmo tipo de destaque que a animação já dava com emoji.
+const ICONES: Record<string, { ativo: NomeIonicon; inativo: NomeIonicon }> = {
+  Home: { ativo: "home", inativo: "home-outline" },
+  Mapa: { ativo: "location", inativo: "location-outline" },
+  Emergencia: { ativo: "alert-circle", inativo: "alert-circle-outline" },
+  Perfil: { ativo: "person", inativo: "person-outline" },
 };
 
 function ItemDaAba({
@@ -33,7 +41,7 @@ function ItemDaAba({
   onPress,
 }: {
   ativo: boolean;
-  icone: string;
+  icone: { ativo: NomeIonicon; inativo: NomeIonicon };
   label: string;
   onPress: () => void;
 }) {
@@ -65,7 +73,12 @@ function ItemDaAba({
     >
       <View style={styles.itemIconArea}>
         <Animated.View style={[styles.itemIconBackground, estiloFundo]} />
-        <Animated.Text style={[styles.itemIcon, estiloIcone]}>{icone}</Animated.Text>
+        <AnimatedIonicons
+          name={ativo ? icone.ativo : icone.inativo}
+          size={18}
+          color={ativo ? colors.primary : colors.textMuted}
+          style={estiloIcone}
+        />
       </View>
 
       <Text style={[styles.itemLabel, ativo && styles.itemLabelActive]}>{label}</Text>
@@ -103,7 +116,7 @@ export function BottomNavigation({ state, descriptors, navigation }: BottomTabBa
             <ItemDaAba
               key={route.key}
               ativo={ativo}
-              icone={ICONES[route.name] ?? "•"}
+              icone={ICONES[route.name] ?? { ativo: "ellipse", inativo: "ellipse-outline" }}
               label={label}
               onPress={aoTocar}
             />

@@ -13,10 +13,11 @@
  */
 
 import React, { useCallback, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Image } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable, Alert, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors, spacing, radius, fontSizes, fontWeights, shadows } from "../../theme";
 import { useTranslation } from "../../i18n";
 import { AppCard } from "../../components/AppCard";
@@ -29,6 +30,7 @@ import {
   escolherFotoDaGaleria,
 } from "../../services/storage/profilePhoto";
 import type { ProfileStackNavigation } from "../../navigation/types";
+import { Text } from "../../components/AppText";
 
 export function ProfileScreen() {
   const navigation = useNavigation<ProfileStackNavigation>();
@@ -120,12 +122,12 @@ export function ProfileScreen() {
   const telefone = usuario?.telefone || t("perfil.notInformed");
 
   const opcoesConfiguracoes: ProfileOptionItem[] = [
-    { key: "editar", icon: "👤", label: t("perfil.editProfile"), onPress: () => navigation.navigate("EditProfile") },
-    { key: "seguranca", icon: "🛡", label: t("perfil.security"), onPress: () => navigation.navigate("Security") },
-    { key: "localizacao", icon: "📍", label: t("perfil.location"), onPress: () => navigation.navigate("Location") },
-    { key: "notificacoes", icon: "🔔", label: t("notificacoesConfig.title"), onPress: () => navigation.navigate("Notifications") },
-    { key: "idioma", icon: "🌐", label: t("configuracoes.language"), onPress: () => navigation.navigate("Language") },
-    { key: "privacidade", icon: "🔒", label: t("perfil.privacy"), onPress: () => navigation.navigate("Privacy") },
+    { key: "editar", icon: "person-outline", label: t("perfil.editProfile"), onPress: () => navigation.navigate("EditProfile") },
+    { key: "seguranca", icon: "shield-checkmark-outline", label: t("perfil.security"), onPress: () => navigation.navigate("Security") },
+    { key: "localizacao", icon: "location-outline", label: t("perfil.location"), onPress: () => navigation.navigate("Location") },
+    { key: "notificacoes", icon: "notifications-outline", label: t("notificacoesConfig.title"), onPress: () => navigation.navigate("Notifications") },
+    { key: "idioma", icon: "globe-outline", label: t("configuracoes.language"), onPress: () => navigation.navigate("Language") },
+    { key: "privacidade", icon: "lock-closed-outline", label: t("perfil.privacy"), onPress: () => navigation.navigate("Privacy") },
   ];
 
   return (
@@ -142,7 +144,7 @@ export function ProfileScreen() {
               </View>
             )}
             <View style={styles.cameraBadge}>
-              <Text style={styles.cameraBadgeIcon}>📷</Text>
+              <Ionicons name="camera" size={14} color={colors.text} />
             </View>
           </Pressable>
 
@@ -150,6 +152,7 @@ export function ProfileScreen() {
           <Text style={styles.email}>{email}</Text>
 
           <View style={styles.badge}>
+            <Ionicons name="checkmark-circle" size={12} color={colors.successLight} />
             <Text style={styles.badgeText}>{t("perfil.protected")}</Text>
           </View>
         </Animated.View>
@@ -160,12 +163,18 @@ export function ProfileScreen() {
 
           <View style={styles.infoStack}>
             <AppCard style={styles.infoCard}>
-              <Text style={styles.infoLabel}>{t("perfil.email")}</Text>
+              <View style={styles.infoLabelRow}>
+                <Ionicons name="mail-outline" size={14} color={colors.textMuted} />
+                <Text style={styles.infoLabel}>{t("perfil.email")}</Text>
+              </View>
               <Text style={styles.infoValue}>{email}</Text>
             </AppCard>
 
             <AppCard style={styles.infoCard}>
-              <Text style={styles.infoLabel}>{t("perfil.phone")}</Text>
+              <View style={styles.infoLabelRow}>
+                <Ionicons name="call-outline" size={14} color={colors.textMuted} />
+                <Text style={styles.infoLabel}>{t("perfil.phone")}</Text>
+              </View>
               <Text style={styles.infoValue}>{telefone}</Text>
             </AppCard>
           </View>
@@ -184,7 +193,7 @@ export function ProfileScreen() {
             items={[
               {
                 key: "emergencia",
-                icon: "🚨",
+                icon: "alert-circle-outline",
                 label: t("perfil.emergencySettings"),
                 description: t("perfil.emergencySettingsDesc"),
                 onPress: () => navigation.navigate("EmergencySettings"),
@@ -196,7 +205,10 @@ export function ProfileScreen() {
         {/* SAIR */}
         <Animated.View entering={FadeInDown.duration(400).delay(360)}>
           <Pressable onPress={aoSair} style={styles.logoutButton} accessibilityRole="button">
-            <Text style={styles.logoutText}>🚪 {t("perfil.logout")}</Text>
+            <View style={styles.logoutContent}>
+              <Ionicons name="log-out-outline" size={18} color={colors.dangerLight} />
+              <Text style={styles.logoutText}>{t("perfil.logout")}</Text>
+            </View>
           </Pressable>
         </Animated.View>
       </ScrollView>
@@ -243,6 +255,9 @@ const styles = StyleSheet.create({
   email: { color: colors.textSecondary, fontSize: fontSizes.xs },
   badge: {
     marginTop: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 999,
@@ -253,6 +268,7 @@ const styles = StyleSheet.create({
   sectionTitle: { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.bold },
   infoStack: { gap: spacing.md },
   infoCard: { gap: 4 },
+  infoLabelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   infoLabel: { color: colors.textMuted, fontSize: 11, fontWeight: fontWeights.medium },
   infoValue: { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.medium },
   logoutButton: {
@@ -264,5 +280,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  logoutContent: { flexDirection: "row", alignItems: "center", gap: 8 },
   logoutText: { color: colors.dangerLight, fontSize: fontSizes.sm, fontWeight: fontWeights.bold },
 });
